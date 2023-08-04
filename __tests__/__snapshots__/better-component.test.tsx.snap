@@ -1,0 +1,14 @@
+// Jest Snapshot v1, https://goo.gl/fbAQLP
+
+exports[`BetterComponent should render the component 1`] = `
+<DocumentFragment>
+  <div>
+    <button
+      class="btn btn-primary"
+      data-testid="comp-btn"
+    >
+      Click Me
+    </button>
+  </div>
+</DocumentFragment>
+`;

@@ -1,0 +1,85 @@
+{
+  "plugins": [
+    "@typescript-eslint"
+  ],
+  "env": {
+    "browser": true,
+    "es2021": true
+  },
+  "extends": [
+    "prettier",
+    "eslint:recommended",
+    "plugin:@typescript-eslint/eslint-recommended",
+    "plugin:@typescript-eslint/recommended"
+  ],
+  "parser": "@typescript-eslint/parser",
+  "parserOptions": {
+    "project": "./tsconfig.json",
+    "sourceType": "module"
+  },
+  "rules": {
+    "max-len": [
+      "error",
+      70,
+      4,
+      {
+        "ignoreUrls": true,
+        "ignoreStrings": true,
+        "ignoreRegExpLiterals": true,
+        "ignoreTemplateLiterals": true
+      }
+    ],
+    "linebreak-style": [
+      "error",
+      "unix"
+    ],
+    "quotes": [
+      "error",
+      "double",
+      {
+        "avoidEscape": true
+      }
+    ],
+    "semi": [
+      "error",
+      "always"
+    ],
+    "@typescript-eslint/consistent-type-imports": "error",
+    "@typescript-eslint/consistent-type-exports": "error",
+    "@typescript-eslint/member-delimiter-style": "error",
+    "@typescript-eslint/no-confusing-non-null-assertion": "error",
+    "@typescript-eslint/no-misused-new": "error",
+    "@typescript-eslint/no-require-imports": "error",
+    "@typescript-eslint/restrict-plus-operands": "error",
+    "@typescript-eslint/switch-exhaustiveness-check": "error",
+    "@typescript-eslint/no-base-to-string": "error",
+    "@typescript-eslint/prefer-nullish-coalescing": "warn",
+    "@typescript-eslint/require-array-sort-compare": "warn",
+    "@typescript-eslint/no-empty-interface": "off",
+    "@typescript-eslint/prefer-for-of": "off",
+    "@typescript-eslint/no-this-alias": "off",
+    "@typescript-eslint/no-non-null-assertion": "off",
+    "@typescript-eslint/no-explicit-any": "off",
+    "@typescript-eslint/unbound-method": "off",
+    "@typescript-eslint/explicit-module-boundary-types": "off",
+    "no-async-promise-executor": "off",
+    "@typescript-eslint/no-floating-promises": "off",
+    "@typescript-eslint/no-empty-function": "off",
+    "@typescript-eslint/no-namespace": "off",
+    "@typescript-eslint/ban-ts-comment": "off",
+    "no-constant-condition": "off",
+    "no-prototype-builtins": "off",
+    "no-control-regex": "off",
+    "@typescript-eslint/ban-types": [
+      "error",
+      {
+        "types": {
+          "object": false,
+          "Function": false,
+          "{}": false
+        },
+        "extendDefaults": true
+      }
+    ]
+  }
+}
