@@ -1,5 +1,9 @@
 import type { ReactNode } from "react";
 import React from "react";
+import type {
+  ComponentModule,
+  ComponentModuleParam,
+} from "./modules/component-module";
 import { Computed } from "./modules/computed";
 import type { Dependency } from "./modules/effect";
 import { Effect } from "./modules/effect";
@@ -9,7 +13,7 @@ import { createReducerState } from "./modules/reducer";
 import { State } from "./modules/state";
 import { pdep } from "./pdep";
 
-type PropsAsDependencies<P extends object> = {
+export type PropsAsDependencies<P extends object> = {
   [K in keyof P]-?: Dependency<P[K]>;
 };
 
@@ -98,9 +102,9 @@ export abstract class BetterComponent<
     this._lifecycle.unmount();
   }
 
-  protected $state<T>(initialValue: T | (() => T)): State<T>;
-  protected $state<T = undefined>(): State<T | undefined>;
-  protected $state<T>(initialValue?: T) {
+  public $state<T>(initialValue: T | (() => T)): State<T>;
+  public $state<T = undefined>(): State<T | undefined>;
+  public $state<T>(initialValue?: T) {
     return new State(
       this._lifecycle,
       String(this._nextStateId++),
@@ -110,14 +114,14 @@ export abstract class BetterComponent<
     );
   }
 
-  protected $reducer<A extends object, T = undefined>(
+  public $reducer<A extends object, T = undefined>(
     actionsClass: new () => A,
   ): Reducer<T, A>;
-  protected $reducer<A extends object, T>(
+  public $reducer<A extends object, T>(
     initialValue: T,
     actionsClass: new () => A,
   ): Reducer<T, A>;
-  protected $reducer(...args: any[]) {
+  public $reducer(...args: any[]) {
     const initialValue = args.length === 1 ? undefined : args[0];
     const actionsClass = args.length === 1 ? args[0] : args[1];
 
@@ -131,14 +135,14 @@ export abstract class BetterComponent<
     );
   }
 
-  protected $effect(
+  public $effect(
     callback: () => void | (() => void),
     deps?: Dependency[],
   ) {
     return new Effect(this._lifecycle, callback, deps?.slice());
   }
 
-  protected $computed<T>(
+  public $computed<T>(
     callback: () => T,
     deps?: Dependency[],
   ): Computed<T> {
@@ -148,6 +152,33 @@ export abstract class BetterComponent<
       callback,
       deps?.slice(),
     );
+  }
+
+  public $mod<
+    Args extends any[] = [],
+    Props extends object = {},
+    C extends ComponentModule<Args, Props> = ComponentModule<
+      Args,
+      Props
+    >,
+  >(
+    Module: new (params: ComponentModuleParam) => C,
+    ...args: Args
+  ): C {
+    return new Module({
+      setModule: (mod) => {
+        Object.defineProperty(mod, "props", {
+          get: () => {
+            return this.props;
+          },
+        });
+
+        Object.assign(mod, {
+          args,
+          _main: this,
+        });
+      },
+    });
   }
 
   abstract render(): ReactNode;

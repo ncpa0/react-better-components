@@ -5,7 +5,8 @@ import {
   waitFor,
 } from "@testing-library/react";
 import React from "react";
-import { BetterComponent } from "../src/index";
+import { BetterComponent, State } from "../src/index";
+import { ComponentModule } from "../src/modules/component-module";
 
 type ButtonProps = {
   onClick?: () => void;
@@ -272,7 +273,7 @@ describe("BetterComponent", () => {
     });
   });
 
-  describe("computed", () => {
+  describe("$computed", () => {
     it("should produce a computed readonly state", async () => {
       type Props = {
         value: number;
@@ -326,6 +327,195 @@ describe("BetterComponent", () => {
       rendered.rerender(<MyComponent value={4} />);
 
       expect(rendered.getByTestId("out").textContent).toBe("1-4");
+    });
+  });
+
+  describe("$mod", () => {
+    it("should be able to manage state", () => {
+      class Module extends ComponentModule {
+        value = this.$state("abcd-4");
+
+        constructor(params: any) {
+          super(params);
+        }
+
+        setString(value: string) {
+          this.value.set(value + "-" + value.length);
+        }
+
+        renderLabel() {
+          return <span data-testid="mod-out">{this.value}</span>;
+        }
+      }
+
+      class MyComponent extends BetterComponent {
+        myState = this.$state("Hello");
+        module = this.$mod(Module);
+
+        render() {
+          return (
+            <div>
+              <div data-testid="main-out">{this.myState}</div>
+              {this.module.renderLabel()}
+              <button
+                data-testid="set-string"
+                onClick={() => {
+                  this.module.setString("World");
+                }}
+              >
+                Set String
+              </button>
+            </div>
+          );
+        }
+      }
+
+      const rendered = render(<MyComponent />);
+
+      expect(rendered.getByTestId("main-out").textContent).toBe(
+        "Hello",
+      );
+      expect(rendered.getByTestId("mod-out").textContent).toBe(
+        "abcd-4",
+      );
+
+      fireEvent.click(rendered.getByTestId("set-string"));
+
+      expect(rendered.getByTestId("main-out").textContent).toBe(
+        "Hello",
+      );
+      expect(rendered.getByTestId("mod-out").textContent).toBe(
+        "World-5",
+      );
+    });
+
+    it("should be able to create effects", () => {
+      const onEffect = jest.fn();
+
+      class Module extends ComponentModule {
+        value = this.$state(0);
+
+        constructor(params: any) {
+          super(params);
+
+          this.$effect(onEffect, [this.value]);
+        }
+
+        increment2() {
+          this.value.set((v) => v + 2);
+        }
+      }
+
+      class MyComponent extends BetterComponent {
+        module = this.$mod(Module);
+
+        render() {
+          return (
+            <div>
+              <button
+                data-testid="increment2"
+                onClick={() => {
+                  this.module.increment2();
+                }}
+              >
+                Increment
+              </button>
+            </div>
+          );
+        }
+      }
+
+      const rendered = render(<MyComponent />);
+
+      expect(onEffect).toHaveBeenCalledTimes(1);
+
+      fireEvent.click(rendered.getByTestId("increment2"));
+
+      expect(onEffect).toHaveBeenCalledTimes(2);
+    });
+
+    it("should be able to read the props and args", () => {
+      type Props = {
+        value: number;
+      };
+
+      type Args = [State<string>];
+
+      const onPropChange = jest.fn();
+      const onArgChange = jest.fn();
+
+      class Module extends ComponentModule<Args, Props> {
+        constructor(param: any) {
+          super(param);
+
+          expect(this.args[0].get()).toBe("Hello");
+          expect(this.props).toMatchObject({ value: 0 });
+
+          this.$effect(onArgChange, [this.args[0]]);
+          this.$effect(onPropChange, [this.depend.value]);
+        }
+
+        out() {
+          return (
+            <div>
+              <span data-testid="mod-out-1">{this.args[0]}</span>
+              <span data-testid="mod-out-2">{this.props.value}</span>
+            </div>
+          );
+        }
+      }
+
+      class MyComponent extends BetterComponent<Props> {
+        label = this.$state("Hello");
+        module = this.$mod(Module, this.label);
+
+        changeLabel = () => {
+          this.label.set("World");
+        };
+
+        render() {
+          return (
+            <div>
+              {this.module.out()}
+              <button
+                data-testid="change-label"
+                onClick={this.changeLabel}
+              >
+                Change Label
+              </button>
+            </div>
+          );
+        }
+      }
+
+      const rendered = render(<MyComponent value={0} />);
+
+      expect(onArgChange).toHaveBeenCalledTimes(1);
+      expect(onPropChange).toHaveBeenCalledTimes(1);
+      expect(rendered.getByTestId("mod-out-1").textContent).toBe(
+        "Hello",
+      );
+      expect(rendered.getByTestId("mod-out-2").textContent).toBe("0");
+
+      fireEvent.click(rendered.getByTestId("change-label"));
+
+      expect(onArgChange).toHaveBeenCalledTimes(2);
+      expect(onPropChange).toHaveBeenCalledTimes(1);
+      expect(rendered.getByTestId("mod-out-1").textContent).toBe(
+        "World",
+      );
+      expect(rendered.getByTestId("mod-out-2").textContent).toBe("0");
+
+      rendered.rerender(<MyComponent value={34} />);
+
+      expect(onArgChange).toHaveBeenCalledTimes(2);
+      expect(onPropChange).toHaveBeenCalledTimes(2);
+      expect(rendered.getByTestId("mod-out-1").textContent).toBe(
+        "World",
+      );
+      expect(rendered.getByTestId("mod-out-2").textContent).toBe(
+        "34",
+      );
     });
   });
 });
