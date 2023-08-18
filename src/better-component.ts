@@ -1,10 +1,16 @@
 import type { ReactNode } from "react";
 import React from "react";
+import type { EffectDependency } from "./modules/effect";
 import { Effect } from "./modules/effect";
 import { LifecycleEvents } from "./modules/lifecycle";
-import type { PublicOf, Reducer } from "./modules/reducer";
+import type { Reducer } from "./modules/reducer";
 import { createReducerState } from "./modules/reducer";
 import { State } from "./modules/state";
+import { pdep } from "./pdep";
+
+type PropsAsDependencies<P extends object> = {
+  [K in keyof P]-?: EffectDependency<P[K]>;
+};
 
 export abstract class BetterComponent<
   P extends object = {},
@@ -13,6 +19,25 @@ export abstract class BetterComponent<
 
   private _nextStateId = 1;
   private _lifecycle = new LifecycleEvents();
+
+  /**
+   * A proxy that can be used to get $effect dependencies for the
+   * component props.
+   *
+   * @example
+   *   class MyComponent extends BetterComponent<{
+   *     label: string;
+   *   }> {
+   *     constructor(props) {
+   *       super(props);
+   *
+   *       this.$effect(() => {
+   *         console.log("Label changed:", this.props.label);
+   *       }, [this.depend.label]);
+   *     }
+   *   }
+   */
+  protected depend: PropsAsDependencies<P>;
 
   constructor(props: Readonly<P> | P) {
     super(props);
@@ -46,6 +71,18 @@ export abstract class BetterComponent<
         lastCtxValue = currentCtxValue;
       });
     }
+
+    this.depend = new Proxy(
+      {},
+      {
+        get: (_: any, propName: string) => {
+          return pdep(
+            () =>
+              this.props[propName as keyof (typeof this)["props"]],
+          );
+        },
+      },
+    );
   }
 
   public componentDidMount(): void {
@@ -95,7 +132,7 @@ export abstract class BetterComponent<
 
   protected $effect(
     callback: () => void | (() => void),
-    deps?: PublicOf<State<any>>[],
+    deps?: EffectDependency[],
   ) {
     return new Effect(this._lifecycle, callback, deps?.slice());
   }

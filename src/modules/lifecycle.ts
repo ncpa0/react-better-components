@@ -64,9 +64,5 @@ export class LifecycleEvents {
         console.error(e);
       }
     }
-
-    this.onMountCbs = [];
-    this.onUnmountCbs = [];
-    this.onUpdateCbs = [];
   }
 }

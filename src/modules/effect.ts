@@ -1,6 +1,8 @@
 import type { LifecycleEvents } from "./lifecycle";
-import type { PublicOf } from "./reducer";
-import type { State } from "./state";
+
+export type EffectDependency<T = unknown> = {
+  get: () => T;
+};
 
 const noop = () => {};
 
@@ -11,7 +13,7 @@ export class Effect {
   public constructor(
     private readonly lifecycle: LifecycleEvents,
     private readonly callback: () => void | (() => void),
-    private readonly deps?: PublicOf<State<any>>[],
+    private readonly deps?: EffectDependency[],
   ) {
     this.lifecycle.onMount(this.runCallback);
 
@@ -52,7 +54,7 @@ export class Effect {
     }
   };
 
-  private subscribeToDeps(deps: PublicOf<State<any>>[]) {
+  private subscribeToDeps(deps: EffectDependency[]) {
     if (deps.length === 0) {
       return;
     }

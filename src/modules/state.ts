@@ -24,9 +24,7 @@ export class State<T> {
       this.set = () => {};
     });
 
-    if (initialValue != null) {
-      this.getState()[this.name] = initialValue;
-    }
+    this.getState()[this.name] = initialValue;
   }
 
   public get(): T {

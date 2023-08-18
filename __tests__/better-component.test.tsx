@@ -58,7 +58,10 @@ describe("BetterComponent", () => {
 
     const app = render(
       <div>
-        <Button onClick={() => {}} onLabelChange={onBtnLabelChange} />
+        <Button
+          onClick={() => {}}
+          onLabelChange={onBtnLabelChange}
+        />
       </div>,
     );
 
@@ -209,5 +212,63 @@ describe("BetterComponent", () => {
       [4],
       [8],
     ]);
+  });
+
+  describe("$effect", () => {
+    it("should not trigger when changed props is not a dependency", () => {
+      type Props = {
+        value: number;
+      };
+
+      const onEffect = jest.fn();
+
+      class Counter extends BetterComponent<Props> {
+        constructor(props: Props) {
+          super(props);
+
+          this.$effect(onEffect, []);
+        }
+
+        render() {
+          return <div>{this.props.value}</div>;
+        }
+      }
+
+      const rendered = render(<Counter value={0} />);
+
+      expect(onEffect).toHaveBeenCalledTimes(1);
+
+      rendered.rerender(<Counter value={1} />);
+
+      expect(onEffect).toHaveBeenCalledTimes(1);
+    });
+
+    it("should trigger when changed props is a dependency", () => {
+      type Props = {
+        value: number;
+      };
+
+      const onEffect = jest.fn();
+
+      class Counter extends BetterComponent<Props> {
+        constructor(props: Props) {
+          super(props);
+
+          this.$effect(onEffect, [this.depend.value]);
+        }
+
+        render() {
+          return <div>{this.props.value}</div>;
+        }
+      }
+
+      const rendered = render(<Counter value={0} />);
+
+      expect(onEffect).toHaveBeenCalledTimes(1);
+
+      rendered.rerender(<Counter value={1} />);
+
+      expect(onEffect).toHaveBeenCalledTimes(2);
+    });
   });
 });
