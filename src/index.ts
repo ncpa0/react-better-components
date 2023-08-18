@@ -1,4 +1,7 @@
-export { BetterComponent } from "./better-component";
+export {
+  BetterComponent,
+  PureBetterComponent,
+} from "./better-component";
 export type { PropsAsDependencies } from "./better-component";
 export { MapContext } from "./context-decorator";
 export { ComponentModule } from "./modules/component-module";
