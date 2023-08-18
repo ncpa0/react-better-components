@@ -271,4 +271,61 @@ describe("BetterComponent", () => {
       expect(onEffect).toHaveBeenCalledTimes(2);
     });
   });
+
+  describe("computed", () => {
+    it("should produce a computed readonly state", async () => {
+      type Props = {
+        value: number;
+      };
+
+      class MyComponent extends BetterComponent<Props> {
+        intValue = this.$state(0);
+        comp;
+
+        constructor(props: Props) {
+          super(props);
+
+          this.comp = this.$computed(() => {
+            return (
+              this.intValue.get().toString() +
+              "-" +
+              this.props.value.toString()
+            );
+          }, [this.intValue, this.depend.value]);
+        }
+
+        handleClick = () => {
+          this.intValue.set((c) => c + 1);
+        };
+
+        render() {
+          return (
+            <div>
+              <div data-testid="out">{this.comp}</div>
+              <button
+                data-testid="increment-state"
+                onClick={this.handleClick}
+              >
+                Click
+              </button>
+            </div>
+          );
+        }
+      }
+
+      const rendered = render(<MyComponent value={0} />);
+
+      expect(rendered.getByTestId("out").textContent).toBe("0-0");
+
+      fireEvent.click(rendered.getByTestId("increment-state"));
+
+      await waitFor(() => {
+        expect(rendered.getByTestId("out").textContent).toBe("1-0");
+      });
+
+      rendered.rerender(<MyComponent value={4} />);
+
+      expect(rendered.getByTestId("out").textContent).toBe("1-4");
+    });
+  });
 });

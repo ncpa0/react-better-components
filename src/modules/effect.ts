@@ -1,6 +1,6 @@
 import type { LifecycleEvents } from "./lifecycle";
 
-export type EffectDependency<T = unknown> = {
+export type Dependency<T = unknown> = {
   get: () => T;
 };
 
@@ -13,7 +13,7 @@ export class Effect {
   public constructor(
     private readonly lifecycle: LifecycleEvents,
     private readonly callback: () => void | (() => void),
-    private readonly deps?: EffectDependency[],
+    private readonly deps?: Dependency[],
   ) {
     this.lifecycle.onMount(this.runCallback);
 
@@ -54,7 +54,7 @@ export class Effect {
     }
   };
 
-  private subscribeToDeps(deps: EffectDependency[]) {
+  private subscribeToDeps(deps: Dependency[]) {
     if (deps.length === 0) {
       return;
     }

@@ -1,4 +1,4 @@
-import type { EffectDependency } from "./modules/effect";
+import type { Dependency } from "./modules/effect";
 
 /**
  * Creates a dependency from a component property that can be used in
@@ -7,7 +7,7 @@ import type { EffectDependency } from "./modules/effect";
  * @example
  *   this.$effect(() => {}, [pdep(() => this.props.label)]);
  */
-export const pdep = <T>(getProp: () => T): EffectDependency<T> => {
+export const pdep = <T>(getProp: () => T): Dependency<T> => {
   return {
     get: getProp,
   };

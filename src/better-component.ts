@@ -1,6 +1,7 @@
 import type { ReactNode } from "react";
 import React from "react";
-import type { EffectDependency } from "./modules/effect";
+import { Computed } from "./modules/computed";
+import type { Dependency } from "./modules/effect";
 import { Effect } from "./modules/effect";
 import { LifecycleEvents } from "./modules/lifecycle";
 import type { Reducer } from "./modules/reducer";
@@ -9,7 +10,7 @@ import { State } from "./modules/state";
 import { pdep } from "./pdep";
 
 type PropsAsDependencies<P extends object> = {
-  [K in keyof P]-?: EffectDependency<P[K]>;
+  [K in keyof P]-?: Dependency<P[K]>;
 };
 
 export abstract class BetterComponent<
@@ -132,9 +133,21 @@ export abstract class BetterComponent<
 
   protected $effect(
     callback: () => void | (() => void),
-    deps?: EffectDependency[],
+    deps?: Dependency[],
   ) {
     return new Effect(this._lifecycle, callback, deps?.slice());
+  }
+
+  protected $computed<T>(
+    callback: () => T,
+    deps?: Dependency[],
+  ): Computed<T> {
+    return new Computed(
+      this._lifecycle,
+      this.forceUpdate.bind(this),
+      callback,
+      deps?.slice(),
+    );
   }
 
   abstract render(): ReactNode;
