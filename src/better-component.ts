@@ -7,6 +7,7 @@ import type {
 import { Computed } from "./modules/computed";
 import type { Dependency } from "./modules/effect";
 import { Effect } from "./modules/effect";
+import { ExternalStore } from "./modules/external-store";
 import { LifecycleEvents } from "./modules/lifecycle";
 import type { Reducer } from "./modules/reducer";
 import { createReducerState } from "./modules/reducer";
@@ -181,6 +182,21 @@ export abstract class BetterComponent<
     });
   }
 
+  public $externalStore<T>(
+    subscribe: (onStoreChange: () => void) => () => void,
+    getSnapshot: () => T,
+  ) {
+    return new ExternalStore({
+      getSnapshot,
+      subscribe,
+      setModule: (mod) => {
+        Object.assign(mod, {
+          _main: this,
+        });
+      },
+    });
+  }
+
   abstract render(): ReactNode;
 }
 
@@ -342,6 +358,21 @@ export abstract class PureBetterComponent<
 
         Object.assign(mod, {
           args,
+          _main: this,
+        });
+      },
+    });
+  }
+
+  public $externalStore<T>(
+    subscribe: (onStoreChange: () => void) => () => void,
+    getSnapshot: () => T,
+  ) {
+    return new ExternalStore({
+      getSnapshot,
+      subscribe,
+      setModule: (mod) => {
+        Object.assign(mod, {
           _main: this,
         });
       },

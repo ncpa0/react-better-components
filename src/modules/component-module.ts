@@ -96,4 +96,11 @@ export class ComponentModule<
   ): ComponentModule<Args, Props> {
     return this._main.$mod(Module, ...args);
   }
+
+  public $externalStore<T>(
+    subscribe: (onStoreChange: () => void) => () => void,
+    getSnapshot: () => T,
+  ) {
+    return this._main.$externalStore(subscribe, getSnapshot);
+  }
 }

@@ -43,6 +43,29 @@ class Button extends BetterComponent<ButtonProps> {
   }
 }
 
+class Store<T> extends EventTarget {
+  constructor(private state: T) {
+    super();
+  }
+
+  get = () => {
+    return this.state;
+  };
+
+  set = (state: T) => {
+    this.state = state;
+    this.dispatchEvent(new Event("change"));
+  };
+
+  subscribe = (callback: () => void) => {
+    this.addEventListener("change", callback);
+
+    return () => {
+      this.removeEventListener("change", callback);
+    };
+  };
+}
+
 describe("BetterComponent", () => {
   it("should render the component", async () => {
     const app = render(
@@ -448,17 +471,21 @@ describe("BetterComponent", () => {
         constructor(param: any) {
           super(param);
 
-          expect(this.args[0].get()).toBe("Hello");
+          const [label] = this.args;
+
+          expect(label.get()).toBe("Hello");
           expect(this.props).toMatchObject({ value: 0 });
 
-          this.$effect(onArgChange, [this.args[0]]);
+          this.$effect(onArgChange, [label]);
           this.$effect(onPropChange, [this.depend.value]);
         }
 
         out() {
+          const [label] = this.args;
+
           return (
             <div>
-              <span data-testid="mod-out-1">{this.args[0]}</span>
+              <span data-testid="mod-out-1">{label}</span>
               <span data-testid="mod-out-2">{this.props.value}</span>
             </div>
           );
@@ -515,6 +542,70 @@ describe("BetterComponent", () => {
       );
       expect(rendered.getByTestId("mod-out-2").textContent).toBe(
         "34",
+      );
+    });
+  });
+
+  describe("$externalStore", () => {
+    it("should be able to update with the external store", () => {
+      const store = new Store("Hello");
+
+      class MyComponent extends BetterComponent {
+        label = this.$externalStore(store.subscribe, store.get);
+
+        render() {
+          return <div data-testid="out">{this.label}</div>;
+        }
+      }
+
+      const rendered = render(<MyComponent />);
+
+      expect(rendered.getByTestId("out").textContent).toBe("Hello");
+
+      act(() => {
+        store.set("World");
+      });
+
+      expect(rendered.getByTestId("out").textContent).toBe("World");
+    });
+
+    it("correctly produces computed values", () => {
+      const store = new Store(1);
+      const store2 = new Store(-1);
+
+      class MyComponent extends BetterComponent {
+        s1 = this.$externalStore(store.subscribe, store.get);
+        s2 = this.$externalStore(store2.subscribe, store2.get);
+
+        comp = this.$computed(() => {
+          return `(${this.s1.get()}):(${this.s2.get()})`;
+        }, [this.s1, this.s2]);
+
+        render() {
+          return <div data-testid="out">{this.comp}</div>;
+        }
+      }
+
+      const rendered = render(<MyComponent />);
+
+      expect(rendered.getByTestId("out").textContent).toBe(
+        "(1):(-1)",
+      );
+
+      act(() => {
+        store.set(2);
+      });
+
+      expect(rendered.getByTestId("out").textContent).toBe(
+        "(2):(-1)",
+      );
+
+      act(() => {
+        store2.set(-2);
+      });
+
+      expect(rendered.getByTestId("out").textContent).toBe(
+        "(2):(-2)",
       );
     });
   });
