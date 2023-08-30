@@ -11,10 +11,12 @@ export type PublicOf<T> = {
   [K in keyof T]: T[K];
 };
 
-type MappedAction<A extends (state: any, ...args: any[]) => any> =
-  A extends (state: any, ...args: infer Args) => infer R
-    ? (...args: Args) => R
-    : never;
+type MappedAction<A> = A extends (
+  state: any,
+  ...args: infer Args
+) => infer R
+  ? (...args: Args) => R
+  : never;
 
 type MappedActions<A extends object> = {
   [K in keyof A]: MappedAction<A[K]>;
