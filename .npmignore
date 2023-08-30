@@ -11,10 +11,12 @@
 /.eslintrc.json
 /.gitignore
 /.prettierignore
-/.prettierrc.json
+/.prettierrc.mjs
 /.yarn
 /.yarnrc.yml
 /git-hook-tasks.config.json
 /jest.config.js
 /tsconfig.json
 /yarn-error.log
+/yarn.lock
+/.swcrc
