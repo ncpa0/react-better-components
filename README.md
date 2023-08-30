@@ -72,9 +72,9 @@ computed value will be re-calculated.
 ```tsx
 import { BetterComponent } from "react-better-components";
 
-type Props {
-    multiplyBy: number;
-}
+type Props = {
+  multiplyBy: number;
+};
 
 class MyComponent extends BetterComponent<Props> {
   private value = this.$state(0);
@@ -240,15 +240,17 @@ class MyComponent extends BetterComponent {
   private data = this.$mod(UrlFetch, this.depends.url);
 
   public render() {
-    if (data.isLoading.get()) {
+    if (this.data.isLoading.get()) {
       return <div class="loader">Loading...</div>;
     }
 
-    if (data.error.get()) {
-      return <div class="error-msg">Error: {data.error.get()}</div>;
+    if (this.data.error.get()) {
+      return (
+        <div class="error-msg">Error: {this.data.error.get()}</div>
+      );
     }
 
-    return <div>{data.result}</div>;
+    return <div>{this.data.result}</div>;
   }
 }
 ```
