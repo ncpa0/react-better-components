@@ -21,8 +21,12 @@ export class Computed<T> {
   }
 
   private recalculate = () => {
-    this._value = this.callback();
-    this.forceRender();
+    const nv = this.callback();
+
+    if (!Object.is(nv, this._value)) {
+      this._value = nv;
+      this.forceRender();
+    }
   };
 
   private handleDepUpdate = () => {

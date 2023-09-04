@@ -29,7 +29,7 @@ export class ExternalStore<T> {
 
   private handleUpdate() {
     const value = this.getSnapshot();
-    if (value !== this.value) {
+    if (!Object.is(value, this.value)) {
       this.value = value;
       this._main.forceUpdate();
     }
