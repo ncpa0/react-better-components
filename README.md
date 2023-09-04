@@ -236,7 +236,7 @@ type Props = {
   url: string;
 };
 
-class MyComponent extends BetterComponent {
+class MyComponent extends BetterComponent<Props> {
   private data = this.$mod(UrlFetch, this.depends.url);
 
   public render() {
